@@ -1,6 +1,10 @@
 package com.arcanepost.service.spreadsheetutil;
 
+import com.arcanepost.service.spreadsheetutil.entity.Spreadsheet;
+import com.arcanepost.service.spreadsheetutil.entity.SpreadsheetRow;
+import com.arcanepost.service.spreadsheetutil.entity.SpreadsheetUtilResponse;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 @RestController
 public class SpreadsheetUtilController {
@@ -25,8 +32,7 @@ public class SpreadsheetUtilController {
         if (file == null) {
             return new SpreadsheetUtilResponse(
                     "ERROR",
-                    "Make sure that the spreadsheet you post is to a parameter with name 'file'.",
-                    "");
+                    "Make sure that the spreadsheet you post is to a parameter with name 'file'." );
         }
 
         try {
@@ -43,17 +49,17 @@ public class SpreadsheetUtilController {
             } else {
                 return new SpreadsheetUtilResponse(
                         "ERROR",
-                        "File extension must be xls, xlsx, or csv.",
-                        "");
+                        "File extension must be xls, xlsx, or csv.");
             }
             JSONObject json = ApachePOIUtil.convertXlsxToJson(workbook);
-            return new SpreadsheetUtilResponse("SUCCESS", "Spreadsheet converted.", json.toString());
+            Spreadsheet sheet = convertJsonToEntity(json);
+
+            return new SpreadsheetUtilResponse("SUCCESS", "Spreadsheet converted.", sheet);
 
         } catch (Exception ex) {
             return new SpreadsheetUtilResponse(
                     "ERROR",
-                    ex.getMessage(),
-                    "");
+                    ex.getMessage());
         } finally {
             try {
                 workbook.close();
@@ -70,16 +76,30 @@ public class SpreadsheetUtilController {
         try {
             return new SpreadsheetUtilResponse(
                     "SUCCESS",
-                    "Hello, " + username + "!  Welcome!!",
-                    "");
+                    "Hello, " + username + "!  Welcome!!");
 
         } catch (Exception e) {
             LOGGER.error("*** something went wrong....");
             return new SpreadsheetUtilResponse(
                     "ERROR",
-                    "Could not say hello for some reason" + e.getMessage(),
-                    "");
+                    "Could not say hello for some reason" + e.getMessage());
         }
+
+    }
+
+    private Spreadsheet convertJsonToEntity(JSONObject json){
+
+        ArrayList<SpreadsheetRow> rows = new ArrayList<>();
+
+        Iterator<String> rowIter = json.keys();
+        while (rowIter.hasNext()){
+            String key = rowIter.next();
+            JSONArray array = json.getJSONArray(key);
+            SpreadsheetRow row = new SpreadsheetRow(key, array.toList());
+            rows.add(row);
+        }
+
+        return new Spreadsheet(rows);
 
     }
 }
