@@ -35,6 +35,10 @@ public class SpreadsheetUtilController {
                     "Make sure that the spreadsheet you post is to a parameter with name 'file'." );
         }
 
+        LOGGER.debug("file.getName() = " + file.getName());
+        LOGGER.debug("file.getOriginalFilename() = " + file.getOriginalFilename());
+        LOGGER.debug("file.getContentType() = " + file.getContentType());
+
         try {
             LOGGER.debug("file.getOriginalFilename() = " + file.getOriginalFilename());
 

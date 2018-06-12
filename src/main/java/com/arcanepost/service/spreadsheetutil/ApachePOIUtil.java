@@ -419,12 +419,16 @@ public final class ApachePOIUtil {
                     rownumber++;
                     JSONArray list = new JSONArray();
                     ArrayList<String> rowValueList = getXlsxSheetRowValues(row);
+                    int longestLength = 0;
                     for (String cellData : rowValueList) {
+                        if (cellData.trim().length() > longestLength) {
+                            longestLength = cellData.trim().length();
+                        }
                         list.put(cellData.trim());
                     }
-
-                    obj.put(rownumber + "", list);
-
+                    if (longestLength > 0) {
+                        obj.put(rownumber + "", list);
+                    }
                 }
             }
         } catch (Exception e) {
